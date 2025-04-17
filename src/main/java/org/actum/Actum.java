@@ -1,10 +1,10 @@
-package org.example;
+package org.actum;
 
 /**
  * Hello world!
  *
  */
-public class App 
+public class Actum
 {
     public static void main( String[] args )
     {
