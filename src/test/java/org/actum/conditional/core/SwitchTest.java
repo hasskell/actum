@@ -1,4 +1,4 @@
-package org.actum.core;
+package org.actum.conditional.core;
 
 import org.junit.jupiter.api.BeforeEach;
 

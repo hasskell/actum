@@ -12,7 +12,7 @@ public interface Viewable<T>{
      * @param action action
      * @return action result
      */
-    T peak(Runnable action);
+    T peek(Runnable action);
 
     /**
      * Used for side effects or debugging

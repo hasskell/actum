@@ -1,5 +1,9 @@
-package org.actum.core;
+package org.actum.conditional.core;
 
+import org.actum.logger.ActumLogger;
+import org.actum.logger.LogLevel;
+import org.actum.logger.LoggerSupport;
+import org.actum.util.Formatter;
 import org.actum.visibility.Debuggable;
 import org.actum.visibility.Describable;
 import org.actum.visibility.Traceable;
@@ -16,12 +20,17 @@ import java.util.function.Supplier;
  * .elseIf(condition, action)
  * .elseThen(action)
  */
-public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<If> {
+public class If implements Debuggable,
+        Describable<If>,
+        Traceable<If>,
+        Viewable<If>,
+        LoggerSupport<If> {
 
     private boolean matched;
     private String label;
     private String description;
     private boolean traceable = false;
+    private ActumLogger logger = ((logLevel, message) -> {});
 
     /**
      * Accepts condition on what act upon
@@ -45,6 +54,10 @@ public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<
      */
     public If then(Runnable action) {
         if (this.matched) {
+            if (this.traceable) {
+                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Executing Then block (matched=%s)",
+                        Formatter.normalize(this.label, this.getClass().getSimpleName()), matched));
+            }
             action.run();
         }
         return this;
@@ -60,6 +73,10 @@ public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<
     public If elseIf(boolean condition, Runnable action) {
         if (!this.matched && condition) {
             this.matched = true;
+            if (this.traceable) {
+                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Executing ElseIf block (matched=%s), (condition=%s)",
+                        Formatter.normalize(this.label, this.getClass().getSimpleName()), matched, condition));
+            }
             action.run();
         }
         return this;
@@ -72,6 +89,10 @@ public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<
      */
     public void elseThen(Runnable action) {
         if (!this.matched) {
+            if (this.traceable) {
+                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Executing ElseThen block (matched=%s)",
+                        Formatter.normalize(this.label, this.getClass().getSimpleName()), matched));
+            }
             action.run();
         }
     }
@@ -83,6 +104,10 @@ public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<
      */
     public void orThrows(Supplier<? extends RuntimeException> exception) {
         if (!this.matched) {
+            if (this.traceable) {
+                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Throwing Exception (exception=%s) (matched=%s)",
+                        Formatter.normalize(this.label, this.getClass().getSimpleName()), exception.getClass().getSimpleName(), matched));
+            }
             throw exception.get();
         }
     }
@@ -105,7 +130,7 @@ public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<
      */
     @Override
     public If label(String label) {
-        this.label = label;
+        this.label = label == null ? "" : label;
         return this;
     }
 
@@ -117,7 +142,14 @@ public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<
      */
     @Override
     public If describe(String describe) {
-        this.description = describe;
+        this.description = describe == null ? "" : describe;
+        return this;
+    }
+
+
+    @Override
+    public If withLogger(ActumLogger logger) {
+        this.logger = logger;
         return this;
     }
 
@@ -139,11 +171,11 @@ public class If implements Debuggable, Describable<If>, Traceable<If>, Viewable<
      * @return action result
      */
     @Override
-    public If peak(Runnable action) {
+    public If peek(Runnable action) {
         if (this.matched){
             action.run();
         }
-        return null;
+        return this;
     }
 
     /**
