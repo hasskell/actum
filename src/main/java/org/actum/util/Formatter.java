@@ -1,8 +1,17 @@
 package org.actum.util;
 
+/**
+ * Utility class to help sanitize input strings
+ */
 public class Formatter {
     private static final String DEFAULT_LABEL_PREFIX = "actum";
 
+    /**
+     * Normalize string to kebab-case
+     * @param input Input string
+     * @param defaultValue In case input is not provided
+     * @return kebab-case normalized string
+     */
     public static String normalize(String input, String defaultValue) {
         if (input == null || input.isBlank()) {
             input = DEFAULT_LABEL_PREFIX + defaultValue;
