@@ -54,10 +54,8 @@ public class If implements Debuggable,
      */
     public If then(Runnable action) {
         if (this.matched) {
-            if (this.traceable) {
-                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Executing Then block (matched=%s)",
-                        Formatter.normalize(this.label, this.getClass().getSimpleName()), matched));
-            }
+            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing Then block (matched=%s), (description=%s)",
+                    Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
             action.run();
         }
         return this;
@@ -73,10 +71,8 @@ public class If implements Debuggable,
     public If elseIf(boolean condition, Runnable action) {
         if (!this.matched && condition) {
             this.matched = true;
-            if (this.traceable) {
-                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Executing ElseIf block (matched=%s), (condition=%s)",
-                        Formatter.normalize(this.label, this.getClass().getSimpleName()), matched, condition));
-            }
+            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing ElseIf block (matched=%s), (condition=%s), (description=%s)",
+                    Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, condition, this.description), this.traceable);
             action.run();
         }
         return this;
@@ -89,10 +85,8 @@ public class If implements Debuggable,
      */
     public void elseThen(Runnable action) {
         if (!this.matched) {
-            if (this.traceable) {
-                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Executing ElseThen block (matched=%s)",
-                        Formatter.normalize(this.label, this.getClass().getSimpleName()), matched));
-            }
+            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing ElseThen block (matched=%s), (description=%s)",
+                    Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
             action.run();
         }
     }
@@ -104,10 +98,8 @@ public class If implements Debuggable,
      */
     public void orThrows(Supplier<? extends RuntimeException> exception) {
         if (!this.matched) {
-            if (this.traceable) {
-                this.logger.log(LogLevel.DEBUG, String.format("[ %s ] Throwing Exception (exception=%s) (matched=%s)",
-                        Formatter.normalize(this.label, this.getClass().getSimpleName()), exception.getClass().getSimpleName(), matched));
-            }
+            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
+                    Formatter.normalize(this.label, this.getClass().getSimpleName()), exception.getClass().getSimpleName(), this.matched, this.description), this.traceable);
             throw exception.get();
         }
     }
@@ -142,7 +134,7 @@ public class If implements Debuggable,
      */
     @Override
     public If describe(String describe) {
-        this.description = describe == null ? "" : describe;
+        this.description = describe == null ? "No description provided!" : describe;
         return this;
     }
 
