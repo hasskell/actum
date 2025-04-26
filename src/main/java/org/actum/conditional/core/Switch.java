@@ -12,6 +12,15 @@ import org.actum.visibility.Viewable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Switch class encapsulates Switch statement
+ * Usage:
+ * Switch.on(Input)
+ *     .caseOf(case-1, action-1)
+ *     .caseOf(case-2, action-2)
+ *     .caseOf(case-3, action-3)
+ *     .defaultOf(default-action)
+ */
 public class Switch implements Debuggable,
         LoggerSupport<Switch>,
         Traceable<Switch>,
