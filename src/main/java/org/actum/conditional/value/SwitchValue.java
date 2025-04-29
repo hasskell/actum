@@ -9,17 +9,23 @@ import org.actum.visibility.Viewable;
 
 import java.util.function.Consumer;
 
-public class SwitchValue<T, V> implements Debuggable, Traceable<T>, Viewable<T>, Describable<T>, LoggerSupport<T> {
+public class SwitchValue<T, V> implements Debuggable,
+        Traceable<SwitchValue<T, V>>,
+        Viewable<SwitchValue<T, V>>,
+        Describable<SwitchValue<T, V>>,
+        LoggerSupport<SwitchValue<T, V>> {
 
     private boolean matched;
     private String label;
     private String description;
     private boolean traceable = false;
-    private ActumLogger logger = ((logLevel, message) -> {});
+    private ActumLogger logger = ((logLevel, message) -> {
+    });
 
     @Override
-    public T withLogger(ActumLogger logger) {
-        return null;
+    public SwitchValue<T, V> withLogger(ActumLogger logger) {
+        this.logger = logger;
+        return this;
     }
 
     /**
@@ -29,7 +35,7 @@ public class SwitchValue<T, V> implements Debuggable, Traceable<T>, Viewable<T>,
      */
     @Override
     public String debug() {
-        return "";
+        return String.format("If[Label=%s, Description=%s, Traceable=%s, Matched=%s]", label, description, traceable, matched);
     }
 
     /**
@@ -39,8 +45,9 @@ public class SwitchValue<T, V> implements Debuggable, Traceable<T>, Viewable<T>,
      * @return label
      */
     @Override
-    public T label(String label) {
-        return null;
+    public SwitchValue<T, V> label(String label) {
+        this.label = label == null ? "" : label;
+        return this;
     }
 
     /**
@@ -50,8 +57,9 @@ public class SwitchValue<T, V> implements Debuggable, Traceable<T>, Viewable<T>,
      * @return description
      */
     @Override
-    public T describe(String describe) {
-        return null;
+    public SwitchValue<T, V> describe(String describe) {
+        this.description = describe == null ? "No description provided!" : describe;
+        return this;
     }
 
     /**
@@ -60,8 +68,9 @@ public class SwitchValue<T, V> implements Debuggable, Traceable<T>, Viewable<T>,
      * @return trace
      */
     @Override
-    public T trace() {
-        return null;
+    public SwitchValue<T, V> trace() {
+        this.traceable = true;
+        return this;
     }
 
     /**
@@ -71,8 +80,11 @@ public class SwitchValue<T, V> implements Debuggable, Traceable<T>, Viewable<T>,
      * @return action result
      */
     @Override
-    public T peek(Runnable action) {
-        return null;
+    public SwitchValue<T, V> peek(Runnable action) {
+        if (this.matched){
+            action.run();
+        }
+        return this;
     }
 
     /**
@@ -82,7 +94,8 @@ public class SwitchValue<T, V> implements Debuggable, Traceable<T>, Viewable<T>,
      * @return consumer result
      */
     @Override
-    public T view(Consumer<T> consumer) {
-        return null;
+    public SwitchValue<T, V> view(Consumer<SwitchValue<T, V>> consumer) {
+        consumer.accept(this);
+        return this;
     }
 }

@@ -9,17 +9,19 @@ import org.actum.visibility.Viewable;
 
 import java.util.function.Consumer;
 
-public class IfValue<T> implements Debuggable, Traceable<T>, Viewable<T>, Describable<T>, LoggerSupport<T> {
+public class IfValue<T> implements Debuggable, Traceable<IfValue<T>>, Viewable<IfValue<T>>, Describable<IfValue<T>>, LoggerSupport<IfValue<T>> {
 
     private boolean matched;
     private String label;
     private String description;
     private boolean traceable = false;
-    private ActumLogger logger = ((logLevel, message) -> {});
+    private ActumLogger logger = ((logLevel, message) -> {
+    });
 
     @Override
-    public T withLogger(ActumLogger logger) {
-        return null;
+    public IfValue<T> withLogger(ActumLogger logger) {
+        this.logger = logger;
+        return this;
     }
 
     /**
@@ -29,7 +31,7 @@ public class IfValue<T> implements Debuggable, Traceable<T>, Viewable<T>, Descri
      */
     @Override
     public String debug() {
-        return "";
+        return String.format("If[Label=%s, Description=%s, Traceable=%s, Matched=%s]", label, description, traceable, matched);
     }
 
     /**
@@ -39,8 +41,9 @@ public class IfValue<T> implements Debuggable, Traceable<T>, Viewable<T>, Descri
      * @return label
      */
     @Override
-    public T label(String label) {
-        return null;
+    public IfValue<T> label(String label) {
+        this.label = label == null ? "" : label;
+        return this;
     }
 
     /**
@@ -50,8 +53,9 @@ public class IfValue<T> implements Debuggable, Traceable<T>, Viewable<T>, Descri
      * @return description
      */
     @Override
-    public T describe(String describe) {
-        return null;
+    public IfValue<T> describe(String describe) {
+        this.description = describe == null ? "No description provided!" : describe;
+        return this;
     }
 
     /**
@@ -60,8 +64,9 @@ public class IfValue<T> implements Debuggable, Traceable<T>, Viewable<T>, Descri
      * @return trace
      */
     @Override
-    public T trace() {
-        return null;
+    public IfValue<T> trace() {
+        this.traceable = true;
+        return this;
     }
 
     /**
@@ -71,8 +76,11 @@ public class IfValue<T> implements Debuggable, Traceable<T>, Viewable<T>, Descri
      * @return action result
      */
     @Override
-    public T peek(Runnable action) {
-        return null;
+    public IfValue<T> peek(Runnable action) {
+        if (this.matched) {
+            action.run();
+        }
+        return this;
     }
 
     /**
@@ -82,7 +90,8 @@ public class IfValue<T> implements Debuggable, Traceable<T>, Viewable<T>, Descri
      * @return consumer result
      */
     @Override
-    public T view(Consumer<T> consumer) {
-        return null;
+    public IfValue<T> view(Consumer<IfValue<T>> consumer) {
+        consumer.accept(this);
+        return this;
     }
 }
