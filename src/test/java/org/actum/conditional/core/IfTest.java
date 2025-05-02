@@ -1,9 +1,7 @@
 package org.actum.conditional.core;
 
-import org.actum.conditional.core.If;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
