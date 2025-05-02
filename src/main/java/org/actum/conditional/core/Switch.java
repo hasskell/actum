@@ -9,6 +9,7 @@ import org.actum.visibility.Describable;
 import org.actum.visibility.Traceable;
 import org.actum.visibility.Viewable;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -29,12 +30,12 @@ public class Switch implements Debuggable,
         Describable<Switch>,
         Viewable<Switch> {
 
+    private static final ActumLogger NO_OP_LOGGER = (logLevel, message) -> {};
     private boolean matched;
     private String label;
     private String description;
     private boolean traceable = false;
-    private ActumLogger logger = ((logLevel, message) -> {
-    });
+    private ActumLogger logger = NO_OP_LOGGER;
     private final Object input;
 
     private Switch(Object input) {
@@ -60,7 +61,7 @@ public class Switch implements Debuggable,
      */
     public Switch caseOf(Object match, Runnable action) {
         checkNotNull(action);
-        if (input.equals(match)) {
+        if (!matched && Objects.equals(input, match)) {
             this.matched = true;
             log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing CaseOf block (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
@@ -77,10 +78,11 @@ public class Switch implements Debuggable,
      */
     public Switch defaultOf(Runnable action) {
         checkNotNull(action);
-        this.matched = false;
-        log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing DefaultOf block (matched=%s), (description=%s)",
-                Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
-        action.run();
+        if(!matched){
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing DefaultOf block (matched=%s), (description=%s)",
+                    Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
+            action.run();
+        }
         return this;
     }
 
@@ -116,7 +118,7 @@ public class Switch implements Debuggable,
      */
     @Override
     public String debug() {
-        return String.format("If[Label=%s, Description=%s, Traceable=%s, Matched=%s]", label, description, traceable, matched);
+        return String.format("Switch[Label=%s, Description=%s, Traceable=%s, Matched=%s]", label, description, traceable, matched);
     }
 
     /**
@@ -134,13 +136,13 @@ public class Switch implements Debuggable,
     /**
      * Adds description to condition
      *
-     * @param describe description message
+     * @param description description message
      * @return description
      */
     @Override
-    public Switch describe(String describe) {
-        this.description = describe == null ? "No description provide!" : describe;
-        return null;
+    public Switch describe(String description) {
+        this.description = description == null ? "No description provide!" : description;
+        return this;
     }
 
     /**
@@ -175,5 +177,14 @@ public class Switch implements Debuggable,
 
     public String getDescription() {
         return description == null ? "No description provided!" : description;
+    }
+
+    public boolean isMatched() {
+        return matched;
+    }
+
+    @Override
+    public String toString() {
+        return debug();
     }
 }
