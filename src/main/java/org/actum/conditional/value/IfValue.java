@@ -12,6 +12,8 @@ import org.actum.visibility.Viewable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.actum.util.Validator.checkNotNull;
+
 public class IfValue<T> implements Debuggable,
         Traceable<IfValue<T>>,
         Viewable<IfValue<T>>,
@@ -50,8 +52,9 @@ public class IfValue<T> implements Debuggable,
      * @return instance of type T
      */
     public IfValue<T> then(Supplier<T> action) {
+        checkNotNull(action);
         if (this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing Then block (matched=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing Then block (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
             result = action.get();
         }
@@ -66,9 +69,10 @@ public class IfValue<T> implements Debuggable,
      * @return instance of type T
      */
     public IfValue<T> elseIf(boolean condition, Supplier<T> action) {
+        checkNotNull(action);
         if (!this.matched && condition) {
             this.matched = true;
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing ElseIf block (matched=%s), (condition=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing ElseIf block (matched=%s), (condition=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, condition, this.description), this.traceable);
             result = action.get();
         }
@@ -82,8 +86,9 @@ public class IfValue<T> implements Debuggable,
      * @return result of type T
      */
     public T elseThen(Supplier<T> action) {
+        checkNotNull(action);
         if (!this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing ElseThen block (matched=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing ElseThen block (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
             result = action.get();
         }
@@ -97,7 +102,7 @@ public class IfValue<T> implements Debuggable,
      */
     public void orThrows(Supplier<? extends RuntimeException> exception) {
         if (!this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), exception.getClass().getSimpleName(), this.matched, this.description), this.traceable);
             throw exception.get();
         }

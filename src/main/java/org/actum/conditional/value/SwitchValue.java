@@ -12,6 +12,8 @@ import org.actum.visibility.Viewable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.actum.util.Validator.checkNotNull;
+
 public class SwitchValue<I, R> implements Debuggable,
         Traceable<SwitchValue<I, R>>,
         Viewable<SwitchValue<I, R>>,
@@ -47,9 +49,10 @@ public class SwitchValue<I, R> implements Debuggable,
      * @return instance of type R
      */
     public SwitchValue<I, R> caseOf(I match, Supplier<R> action){
+        checkNotNull(action);
         if (input.equals(match)){
             this.matched = true;
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing CaseOf block (matched=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing CaseOf block (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
             result = action.get();
         }
@@ -62,8 +65,9 @@ public class SwitchValue<I, R> implements Debuggable,
      * @return instance of type R
      */
     public SwitchValue<I, R> defaultOf(Supplier<R> action){
+        checkNotNull(action);
         this.matched = false;
-        log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing DefaultOf block (matched=%s), (description=%s)",
+        log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing DefaultOf block (matched=%s), (description=%s)",
                 Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
         result = action.get();
         return this;
@@ -76,7 +80,7 @@ public class SwitchValue<I, R> implements Debuggable,
      */
     public void orThrows(Supplier<? extends RuntimeException> exception) {
         if (!this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), exception.getClass().getSimpleName(), this.matched, this.description), this.traceable);
             throw exception.get();
         }

@@ -12,6 +12,8 @@ import org.actum.visibility.Viewable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.actum.util.Validator.checkNotNull;
+
 /**
  * If class encapsulates if statements logic
  * Usage:
@@ -26,11 +28,12 @@ public class If implements Debuggable,
         Viewable<If>,
         LoggerSupport<If> {
 
+    private static final ActumLogger NO_OP_LOGGER = (logLevel, message) -> {};
     private boolean matched;
     private String label;
     private String description;
     private boolean traceable = false;
-    private ActumLogger logger = ((logLevel, message) -> {});
+    private ActumLogger logger = NO_OP_LOGGER;
 
     /**
      * Accepts condition on what act upon
@@ -51,11 +54,13 @@ public class If implements Debuggable,
      *
      * @param action action
      * @return instance
+     *
      */
     public If then(Runnable action) {
+        checkNotNull(action);
         if (this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing Then block (matched=%s), (description=%s)",
-                    Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing Then block (matched=%s), (description=%s)",
+                    Formatter.normalize(this.getLabel(), this.getClass().getSimpleName()), this.matched, this.getDescription()), this.traceable);
             action.run();
         }
         return this;
@@ -69,10 +74,11 @@ public class If implements Debuggable,
      * @return instance
      */
     public If elseIf(boolean condition, Runnable action) {
+        checkNotNull(action);
         if (!this.matched && condition) {
             this.matched = true;
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing ElseIf block (matched=%s), (condition=%s), (description=%s)",
-                    Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, condition, this.description), this.traceable);
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing ElseIf block (matched=%s), (condition=%s), (description=%s)",
+                    Formatter.normalize(this.getLabel(), this.getClass().getSimpleName()), this.matched, condition, this.getDescription()), this.traceable);
             action.run();
         }
         return this;
@@ -84,9 +90,10 @@ public class If implements Debuggable,
      * @param action action
      */
     public void elseThen(Runnable action) {
+        checkNotNull(action);
         if (!this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing ElseThen block (matched=%s), (description=%s)",
-                    Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing ElseThen block (matched=%s), (description=%s)",
+                    Formatter.normalize(this.getLabel(), this.getClass().getSimpleName()), this.matched, this.getDescription()), this.traceable);
             action.run();
         }
     }
@@ -98,8 +105,8 @@ public class If implements Debuggable,
      */
     public void orThrows(Supplier<? extends RuntimeException> exception) {
         if (!this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
-                    Formatter.normalize(this.label, this.getClass().getSimpleName()), exception.getClass().getSimpleName(), this.matched, this.description), this.traceable);
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
+                    Formatter.normalize(this.getLabel(), this.getClass().getSimpleName()), exception.getClass().getSimpleName(), this.matched, this.getDescription()), this.traceable);
             throw exception.get();
         }
     }
@@ -122,19 +129,19 @@ public class If implements Debuggable,
      */
     @Override
     public If label(String label) {
-        this.label = label == null ? "" : label;
+        this.label = label == null || label.isBlank() ? getClass().getSimpleName() : label;
         return this;
     }
 
     /**
      * Adds description to condition
      *
-     * @param describe description message
+     * @param description description message
      * @return description
      */
     @Override
-    public If describe(String describe) {
-        this.description = describe == null ? "No description provided!" : describe;
+    public If describe(String description) {
+        this.description = description == null ? "No description provided!" : description;
         return this;
     }
 
@@ -180,5 +187,22 @@ public class If implements Debuggable,
     public If view(Consumer<If> consumer) {
         consumer.accept(this);
         return this;
+    }
+
+    public String getLabel() {
+        return label == null || label.isBlank() ? getClass().getSimpleName() : label;
+    }
+
+    public String getDescription() {
+        return description == null ? "No description provided!" : description;
+    }
+
+    public boolean isMatched() {
+        return matched;
+    }
+
+    @Override
+    public String toString() {
+        return this.debug();
     }
 }

@@ -3,6 +3,8 @@ package org.actum.visibility;
 import org.actum.logger.ActumLogger;
 import org.actum.logger.LogLevel;
 
+import java.util.function.Supplier;
+
 /**
  * Provide capabilities to trace current condition
  * @param <T> type of trace
@@ -21,9 +23,9 @@ public interface Traceable<T> {
      * @param message Message to be logged
      * @param traceable Boolean flag if trace is enabled
      */
-    default void log(ActumLogger logger, LogLevel level, String message, boolean traceable) {
+    default void log(ActumLogger logger, LogLevel level, Supplier<String> message, boolean traceable) {
         if (traceable) {
-            logger.log(level, message);
+            logger.log(level, message.get());
         }
     }
 }

@@ -12,14 +12,16 @@ import org.actum.visibility.Viewable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.actum.util.Validator.checkNotNull;
+
 /**
  * Switch class encapsulates Switch statement
  * Usage:
  * Switch.on(Input)
- *     .caseOf(case-1, action-1)
- *     .caseOf(case-2, action-2)
- *     .caseOf(case-3, action-3)
- *     .defaultOf(default-action)
+ * .caseOf(case-1, action-1)
+ * .caseOf(case-2, action-2)
+ * .caseOf(case-3, action-3)
+ * .defaultOf(default-action)
  */
 public class Switch implements Debuggable,
         LoggerSupport<Switch>,
@@ -31,32 +33,36 @@ public class Switch implements Debuggable,
     private String label;
     private String description;
     private boolean traceable = false;
-    private ActumLogger logger = ((logLevel, message) -> {});
+    private ActumLogger logger = ((logLevel, message) -> {
+    });
     private final Object input;
 
-    private Switch(Object input){
+    private Switch(Object input) {
         this.input = input;
     }
 
     /**
      * Accepts Object as input for comparison
+     *
      * @param input input object
      * @return instance
      */
-    public static Switch on(Object input){
+    public static Switch on(Object input) {
         return new Switch(input);
     }
 
     /**
      * Matches case object with input and executes action
-     * @param match object to match
+     *
+     * @param match  object to match
      * @param action action to execute
      * @return instance
      */
-    public Switch caseOf(Object match, Runnable action){
-        if (input.equals(match)){
+    public Switch caseOf(Object match, Runnable action) {
+        checkNotNull(action);
+        if (input.equals(match)) {
             this.matched = true;
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing CaseOf block (matched=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing CaseOf block (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
             action.run();
         }
@@ -65,12 +71,14 @@ public class Switch implements Debuggable,
 
     /**
      * Executes default action if no of the cases are true
+     *
      * @param action action to execute
      * @return instance
      */
-    public Switch defaultOf(Runnable action){
+    public Switch defaultOf(Runnable action) {
+        checkNotNull(action);
         this.matched = false;
-        log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Executing DefaultOf block (matched=%s), (description=%s)",
+        log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Executing DefaultOf block (matched=%s), (description=%s)",
                 Formatter.normalize(this.label, this.getClass().getSimpleName()), this.matched, this.description), this.traceable);
         action.run();
         return this;
@@ -83,7 +91,7 @@ public class Switch implements Debuggable,
      */
     public void orThrows(Supplier<? extends RuntimeException> exception) {
         if (!this.matched) {
-            log(this.logger, LogLevel.DEBUG, String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
+            log(this.logger, LogLevel.DEBUG, () -> String.format("[ %s ] Throwing Exception (exception=%s), (matched=%s), (description=%s)",
                     Formatter.normalize(this.label, this.getClass().getSimpleName()), exception.getClass().getSimpleName(), this.matched, this.description), this.traceable);
             throw exception.get();
         }
@@ -143,7 +151,7 @@ public class Switch implements Debuggable,
      */
     @Override
     public Switch peek(Runnable action) {
-        if (this.matched){
+        if (this.matched) {
             action.run();
         }
         return this;
@@ -159,5 +167,13 @@ public class Switch implements Debuggable,
     public Switch view(Consumer<Switch> consumer) {
         consumer.accept(this);
         return this;
+    }
+
+    public String getLabel() {
+        return label == null || label.isBlank() ? getClass().getSimpleName() : label;
+    }
+
+    public String getDescription() {
+        return description == null ? "No description provided!" : description;
     }
 }
